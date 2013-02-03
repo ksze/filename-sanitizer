@@ -13,7 +13,7 @@ How to use
 ----------
 
 ```py3
-    >>> import sanitize
+    >>> from sanitize import sanitize_path_fragment
     >>> crazy_filename = '"foo/bar<bla>yada*meow?'
     >>> sanitized_filename = sanitize_path_fragment(
     ...     crazy_filename,
