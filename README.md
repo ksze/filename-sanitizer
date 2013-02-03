@@ -12,6 +12,7 @@ Unlike most of the extremely naïve, whitelist-based solutions found on the Inte
 How to use
 ----------
 
+```py3
     >>> import sanitize
     >>> crazy_filename = '"foo/bar<bla>yada*meow?'
     >>> sanitized_filename = sanitize_path_fragment(
@@ -22,6 +23,7 @@ How to use
     >>> print(sanitized_filename)
     _foo_bar_bla_yada_meow_
     >>>
+```
 
 Read the file [sanitize.py](sanitize.py) for details of how the function deals with various file systems.
 
