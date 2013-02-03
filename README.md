@@ -16,7 +16,7 @@ How to use
     >>> crazy_filename = '"foo/bar<bla>yada*meow?'
     >>> sanitized_filename = sanitize_path_fragment(
     ...     crazy_filename,
-    ...     target_filesystems = {'ntfs'}
+    ...     target_file_systems = {'ntfs_win32'}
     ... )
     ...
     >>> print(sanitized_filename)
