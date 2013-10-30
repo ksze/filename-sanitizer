@@ -72,9 +72,9 @@ def sanitize_path_fragment(
                     sanitized_fragment = unicodedata.normalize('NFC', temp_fragment_bytes.decode(max_lengths[file_system][2]))
                 else: # Assume 'characters'
                     temp_fragment = ''
-                    if file_system == 'hfs+'
+                    if file_system == 'hfs+':
                         normalize = unicodedata.ucd_3_2_0.normalize
-                    else
+                    else:
                         normalize = unicodedata.normalize
                     for character in sanitized_fragment:
                         normalized_character = normalize(max_lengths[file_system][3], character)
