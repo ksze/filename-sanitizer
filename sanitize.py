@@ -38,6 +38,14 @@ def sanitize_path_fragment(
             for character in illegal_characters[file_system]:
                 sanitized_fragment = sanitized_fragment.replace(character, '_')
 
+        # "Quote" illegal filenames
+        if target_file_systems.intersection({'fat32', 'ntfs_win32'}):
+            if sanitized_fragment in ("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+                                      "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"):
+                sanitized_fragment = "_" + sanitized_fragment + "_"
+            if sanitized_fragment.endswith("."):
+                sanitized_fragment = sanitized_fragment[:-1] + "_"
+
         # Truncate if the resulting string is too long
         if truncate:
             max_lengths = {
