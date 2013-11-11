@@ -43,8 +43,6 @@ def sanitize_path_fragment(
             if sanitized_fragment in ("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
                                       "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"):
                 sanitized_fragment = "_" + sanitized_fragment + "_"
-            if sanitized_fragment.endswith("."):
-                sanitized_fragment = sanitized_fragment[:-1] + "_"
 
         # Truncate if the resulting string is too long
         if truncate:
@@ -91,6 +89,15 @@ def sanitize_path_fragment(
                         else:
                             break
                     sanitized_fragment = unicodedata.normalize('NFC', temp_fragment)
+
+        # Disallow a final dot or space for FAT32 and NTFS in Win32 namespace.
+        # This can only be done after truncations because otherwise we may fix the fragment, but
+        # still end up with a bad ending character once it's truncated
+        if (
+            target_file_systems.intersection({'fat32', 'ntfs_win32'}) and
+            (sanitized_fragment.endswith(".") or sanitized_fragment.endswith(" "))
+        ):
+            sanitized_fragment = sanitized_fragment[:-1] + "_"
     else:
         raise ValueError("sanitization_method must be a valid sanitization method")
     return sanitized_fragment
