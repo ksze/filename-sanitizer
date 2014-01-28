@@ -1,7 +1,7 @@
 sanitize
 ========
 
-A Python 3 module that aims to sanitize filenames in a cross-platform, cross-filesystem manner.
+A Python 2.7/3.3 module that aims to sanitize filenames in a cross-platform, cross-filesystem manner.
 
 Dedicated to Nadia Mahmood, my good friend Jawaad's newborn daughter. Maybe this module will be useful to her if she ever decides to follow her father's footsteps in becoming a hacker. ;-)
 
@@ -14,14 +14,15 @@ How to use
 
 ```py3
     >>> from sanitize import sanitize_path_fragment
-    >>> crazy_filename = '"foo/bar<bla>yada*meow?'
+    >>> crazy_filename = u'"foo/bar<bla>yada*meow?.'
     >>> sanitized_filename = sanitize_path_fragment(
     ...     crazy_filename,
-    ...     target_file_systems = {'ntfs_win32'}
+    ...     target_file_systems = {'ntfs_win32'},
+    ...     replacement = u'-'
     ... )
     ...
     >>> print(sanitized_filename)
-    _foo_bar_bla_yada_meow_
+    -foo-bar-bla-yada-meow--
     >>>
 ```
 

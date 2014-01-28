@@ -1,48 +1,65 @@
 import unicodedata
+import sys
 
 def sanitize_path_fragment(
         original_fragment,
+        filename_extension = u'', # when you do want a filename extension, there is no need to include the leading dot.
         target_file_systems = {'btrfs', 'ext', 'ext2', 'ext3', 'ext3cow', 'ext4', 'exfat', 'fat32', 'hfs+', 'ntfs_win32', 'reiser4', 'reiserfs', 'xfs', 'zfs'},
         sanitization_method = 'underscore',
-        truncate = True
+        truncate = True,
+        replacement = u'_'
     ):
+    if sys.version_info[0] == 2:
+        if (type(original_fragment) != unicode or
+            type(filename_extension) != unicode or
+            type(replacement) != unicode):
+            raise ValueError('`original_fragment`, `filename_extension`, and `replacement` must be of the unicode type under Python 2.')
+
     sanitized_fragment = unicodedata.normalize('NFC', original_fragment)
+    if len(filename_extension) > 0:
+        filename_extension = unicodedata.normalize('NFC', u'.' + filename_extension)
+
     if sanitization_method == 'underscore':
         illegal_characters = {
-            'btrfs': {'\0', '/'},
-            'ext': {'\0', '/'},
-            'ext2': {'\0', '/'},
-            'ext3': {'\0', '/'},
-            'ext3cow': {'\0', '/', '@'},
-            'ext4': {'\0', '/'},
+            'btrfs': {u'\0', u'/'},
+            'ext': {u'\0', u'/'},
+            'ext2': {u'\0', u'/'},
+            'ext3': {u'\0', u'/'},
+            'ext3cow': {u'\0', u'/', u'@'},
+            'ext4': {u'\0', u'/'},
             'exfat': {
-                '\00', '\01', '\02', '\03', '\04', '\05', '\06', '\07', '\10', '\11', '\12', '\13', '\14', '\15', '\16', '\17',
-                '\20', '\21', '\22', '\23', '\24', '\25', '\26', '\27', '\30', '\31', '\32', '\33', '\34', '\35', '\36', '\37',
-                '/', '\\', ':', '*', '?', '"', '<', '>', '|',
+                u'\00', u'\01', u'\02', u'\03', u'\04', u'\05', u'\06', u'\07', u'\10', u'\11', u'\12', u'\13', u'\14', u'\15', u'\16', u'\17',
+                u'\20', u'\21', u'\22', u'\23', u'\24', u'\25', u'\26', u'\27', u'\30', u'\31', u'\32', u'\33', u'\34', u'\35', u'\36', u'\37',
+                u'/', u'\\', u':', u'*', u'?', u'"', u'<', u'>', u'|',
             },
             'fat32': { # TODO: Confirm this list; current list is just a wild guess, assuming UTF-16 encoding.
-                '\00', '\01', '\02', '\03', '\04', '\05', '\06', '\07', '\10', '\11', '\12', '\13', '\14', '\15', '\16', '\17',
-                '\20', '\21', '\22', '\23', '\24', '\25', '\26', '\27', '\30', '\31', '\32', '\33', '\34', '\35', '\36', '\37',
-                '/', '\\', ':', '*', '?', '"', '<', '>', '|',
+                u'\00', u'\01', u'\02', u'\03', u'\04', u'\05', u'\06', u'\07', u'\10', u'\11', u'\12', u'\13', u'\14', u'\15', u'\16', u'\17',
+                u'\20', u'\21', u'\22', u'\23', u'\24', u'\25', u'\26', u'\27', u'\30', u'\31', u'\32', u'\33', u'\34', u'\35', u'\36', u'\37',
+                u'/', u'\\', u':', u'*', u'?', u'"', u'<', u'>', u'|',
             },
-            'hfs+': {'\0', '/', ':'}, # In theory, all Unicode characters, including NUL, are usable (HFS+ is awesome in this way); so this is just a sane set for legacy compatibility
-            'ntfs_win32': {'\0', '/', '\\', ':', '*', '?', '"', '<', '>', '|'}, # NTFS Win32 namespace (which is stricter)
-            'ntfs_posix': {'\0', '/'}, # NTFS POSIX namespace (which allows more characters)
-            'reiser4': {'\0', '/'},
-            'reiserfs': {'\0', '/'},
-            'xfs': {'\0', '/'},
-            'zfs': {'\0', '/'},
+            'hfs+': {u'\0', u'/', u':'}, # In theory, all Unicode characters, including NUL, are usable (HFS+ is awesome in this way); so this is just a sane set for legacy compatibility
+            'ntfs_win32': {u'\0', u'/', u'\\', u':', u'*', u'?', u'"', u'<', u'>', u'|'}, # NTFS Win32 namespace (which is stricter)
+            'ntfs_posix': {u'\0', u'/'}, # NTFS POSIX namespace (which allows more characters)
+            'reiser4': {u'\0', u'/'},
+            'reiserfs': {u'\0', u'/'},
+            'xfs': {u'\0', u'/'},
+            'zfs': {u'\0', u'/'},
         }
         # Replace illegal characters with an underscore
         for file_system in target_file_systems:
             for character in illegal_characters[file_system]:
-                sanitized_fragment = sanitized_fragment.replace(character, '_')
+                sanitized_fragment = sanitized_fragment.replace(character, replacement)
+                filename_extension = filename_extension.replace(character, replacement)
 
         # "Quote" illegal filenames
         if target_file_systems.intersection({'fat32', 'ntfs_win32'}):
-            if sanitized_fragment in ("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
-                                      "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"):
-                sanitized_fragment = "_" + sanitized_fragment + "_"
+            windows_reserved_names = (u"CON", u"PRN", u"AUX", u"NUL", u"COM1", u"COM2", u"COM3", u"COM4", u"COM5", u"COM6", u"COM7", u"COM8",
+                                      u"COM9", u"LPT1", u"LPT2", u"LPT3", u"LPT4", u"LPT5", u"LPT6", u"LPT7", u"LPT8", u"LPT9")
+            if sanitized_fragment in windows_reserved_names:
+                sanitized_fragment = replacement + sanitized_fragment + replacement
+            if filename_extension in windows_reserved_names:
+                filename_extension = replacement + filename_extension + replacement
+
 
         # Truncate if the resulting string is too long
         if truncate:
@@ -68,36 +85,43 @@ def sanitize_path_fragment(
             }
             for file_system in target_file_systems:
                 if max_lengths[file_system][1] == 'bytes':
-                    temp_fragment_bytes = bytearray()
+                    extension_bytes = unicodedata.normalize(max_lengths[file_system][3], filename_extension).encode(max_lengths[file_system][2])
+                    if sys.version_info[0] == 2:
+                        temp_fragment = ''
+                    else: # assume Python 3
+                        temp_fragment = bytearray()
                     for character in sanitized_fragment:
                         encoded_bytes = unicodedata.normalize(max_lengths[file_system][3], character).encode(max_lengths[file_system][2])
-                        if len(temp_fragment_bytes + encoded_bytes) <= max_lengths[file_system][0]:
-                            temp_fragment_bytes.extend(encoded_bytes)
+                        if len(temp_fragment) + len(encoded_bytes) + len(extension_bytes)<= max_lengths[file_system][0]:
+                            temp_fragment = temp_fragment + encoded_bytes
                         else:
                             break
-                    sanitized_fragment = unicodedata.normalize('NFC', temp_fragment_bytes.decode(max_lengths[file_system][2]))
+                    sanitized_fragment = unicodedata.normalize('NFC', temp_fragment.decode(max_lengths[file_system][2]))
                 else: # Assume 'characters'
                     temp_fragment = ''
                     if file_system == 'hfs+':
                         normalize = unicodedata.ucd_3_2_0.normalize
                     else:
                         normalize = unicodedata.normalize
+                    normalized_extension = normalize(max_lengths[file_system][3], filename_extension)
                     for character in sanitized_fragment:
                         normalized_character = normalize(max_lengths[file_system][3], character)
-                        if len(temp_fragment + normalized_character) <= max_lengths[file_system][0]:
+                        if len(temp_fragment) + len(normalized_character) + len(normalized_extension) <= max_lengths[file_system][0]:
                             temp_fragment += normalized_character
                         else:
                             break
                     sanitized_fragment = unicodedata.normalize('NFC', temp_fragment)
+
+        sanitized_fragment = sanitized_fragment + filename_extension
 
         # Disallow a final dot or space for FAT32 and NTFS in Win32 namespace.
         # This can only be done after truncations because otherwise we may fix the fragment, but
         # still end up with a bad ending character once it's truncated
         if (
             target_file_systems.intersection({'fat32', 'ntfs_win32'}) and
-            (sanitized_fragment.endswith(".") or sanitized_fragment.endswith(" "))
+            (sanitized_fragment.endswith(u".") or sanitized_fragment.endswith(u" "))
         ):
-            sanitized_fragment = sanitized_fragment[:-1] + "_"
+            sanitized_fragment = sanitized_fragment[:-1] + replacement
     else:
         raise ValueError("sanitization_method must be a valid sanitization method")
     return sanitized_fragment
