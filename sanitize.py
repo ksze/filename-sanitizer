@@ -46,10 +46,9 @@ def sanitize_path_fragment(
             'zfs': {u'\0', u'/'},
         }
         # Replace illegal characters with an underscore
-        for file_system in target_file_systems:
-            for character in illegal_characters[file_system]:
-                sanitized_fragment = sanitized_fragment.replace(character, replacement)
-                filename_extension = filename_extension.replace(character, replacement)
+        for character in set.union(*illegal_characters.values()):
+            sanitized_fragment = sanitized_fragment.replace(character, replacement)
+            filename_extension = filename_extension.replace(character, replacement)
 
         # "Quote" illegal filenames
         if target_file_systems.intersection({'fat32', 'ntfs_win32'}):
