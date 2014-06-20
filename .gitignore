@@ -1,3 +1,5 @@
+.gitignore
+sanitize.egg-info/
 .idea/
 
 *.pyc
