@@ -1,19 +1,29 @@
 import unicodedata
 import sys
 
+
+def _are_unicode(unicode_args=[]):
+    test_results = [(type(arg) == unicode) for arg in unicode_args]
+
+    if False in test_results:
+        return False
+    else:
+        return True
+
+
 def sanitize_path_fragment(
         original_fragment,
         filename_extension = u'', # when you do want a filename extension, there is no need to include the leading dot.
         target_file_systems = {'btrfs', 'ext', 'ext2', 'ext3', 'ext3cow', 'ext4', 'exfat', 'fat32', 'hfs+', 'ntfs_win32', 'reiser4', 'reiserfs', 'xfs', 'zfs'},
         sanitization_method = 'underscore',
         truncate = True,
-        replacement = u'_'
-    ):
+        replacement = u'_',
+        additional_illegal_characters=[],):
     if sys.version_info[0] == 2:
-        if (type(original_fragment) != unicode or
-            type(filename_extension) != unicode or
-            type(replacement) != unicode):
-            raise ValueError('`original_fragment`, `filename_extension`, and `replacement` must be of the unicode type under Python 2.')
+        # enforce that these args are unicode strings
+        unicode_args = [original_fragment, filename_extension, replacement] + additional_illegal_characters
+        if not _are_unicode(unicode_args):
+            raise ValueError('`original_fragment`, `filename_extension`, `replacement`, and `additional_illegal_characters` must be of the unicode type under Python 2.')
 
     sanitized_fragment = unicodedata.normalize('NFC', original_fragment)
     if len(filename_extension) > 0:
@@ -44,6 +54,7 @@ def sanitize_path_fragment(
             'reiserfs': {u'\0', u'/'},
             'xfs': {u'\0', u'/'},
             'zfs': {u'\0', u'/'},
+            'additional_illegal_characters': set(additional_illegal_characters),
         }
         # Replace illegal characters with an underscore
         for character in set.union(*illegal_characters.values()):
