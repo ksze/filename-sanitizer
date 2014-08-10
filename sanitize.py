@@ -3,12 +3,7 @@ import sys
 
 
 def _are_unicode(unicode_args=[]):
-    test_results = [(type(arg) == unicode) for arg in unicode_args]
-
-    if False in test_results:
-        return False
-    else:
-        return True
+    return all((type(arg) == unicode) for arg in unicode_args)
 
 
 def sanitize_path_fragment(
@@ -57,7 +52,9 @@ def sanitize_path_fragment(
             'additional_illegal_characters': set(additional_illegal_characters),
         }
         # Replace illegal characters with an underscore
-        for character in set.union(*illegal_characters.values()):
+        # `target_file_systems` is used further down, so we don't want to pollute it here.
+        _temp_target_file_systems = set.union(target_file_systems, {'additional_illegal_characters'})
+        for character in set.union(*(illegal_characters[file_system] for file_system in _temp_target_file_systems)):
             sanitized_fragment = sanitized_fragment.replace(character, replacement)
             filename_extension = filename_extension.replace(character, replacement)
 
