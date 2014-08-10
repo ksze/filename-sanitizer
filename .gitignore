@@ -1,2 +1,6 @@
+.gitignore
+sanitize.egg-info/
+.idea/
+
 *.pyc
 __pycache__
