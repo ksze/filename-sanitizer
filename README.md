@@ -1,7 +1,7 @@
 sanitize
 ========
 
-A Python 2.7/3.3 module that aims to sanitize filenames in a cross-platform, cross-filesystem manner.
+A Python 2.7/3.2+ module that aims to sanitize filenames in a cross-platform, cross-filesystem manner.
 
 Dedicated to Nadia Mahmood, my good friend Jawaad's newborn daughter. Maybe this module will be useful to her if she ever decides to follow her father's footsteps in becoming a hacker. ;-)
 
