@@ -155,10 +155,7 @@ def sanitize_path_fragment(
                 if max_lengths[file_system][1] == 'bytes':
                     extension_bytes = unicodedata.normalize(max_lengths[file_system][3], filename_extension).encode(max_lengths[file_system][2])
 
-                    if sys.version_info[0] == 2:
-                        temp_fragment = ''
-                    else: # assume Python 3
-                        temp_fragment = bytearray()
+                    temp_fragment = bytearray()
 
                     for character in sanitized_fragment:
                         encoded_bytes = unicodedata.normalize(max_lengths[file_system][3], character).encode(max_lengths[file_system][2])
