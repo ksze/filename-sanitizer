@@ -13,7 +13,7 @@ How to use
 ----------
 
 ```py3
-    >>> from sanitize import sanitize_path_fragment
+    >>> from filename_sanitizer import sanitize_path_fragment
     >>> crazy_filename = u'"foo/bar<bla>yada*meow?.'
     >>> sanitized_filename = sanitize_path_fragment(
     ...     crazy_filename,
@@ -26,7 +26,7 @@ How to use
     >>>
 ```
 
-Read the file [sanitize.py](sanitize.py) for details of how the function deals with various file systems.
+Read the file [filename_sanitizer/__init__.py](filename_sanitizer/__init__.py) for details of how the function deals with various file systems.
 
 License
 -------
